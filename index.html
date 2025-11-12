@@ -93,74 +93,20 @@
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
-    /*****************************************************************/
-    /*  سكربب كامل: عدّاد تنازلي 60 دقيقة بعد الإعلان رقم 15         */
-    /*****************************************************************/
-    const AD_REWARD         = 1000;
-    const INITIAL_ADS       = 15;
-    const RESET_MINUTES     = 60;
-    const POINTS_KEY        = 'points';
-    const ADS_LEFT_KEY      = 'adsLeft';
-    const RESET_UNTIL_KEY   = 'resetUntil';
-
-    let points    = parseInt(localStorage.getItem(POINTS_KEY)   || '0');
-    let adsLeft   = parseInt(localStorage.getItem(ADS_LEFT_KEY) || INITIAL_ADS);
-    let resetUntil= parseInt(localStorage.getItem(RESET_UNTIL_KEY)|| '0');
-
-    const pointsEl    = document.getElementById('points');
-    const adCounterEl = document.getElementById('adCounter');
-    const watchBtn    = document.getElementById('watchBtn');
-
-    function savePoints(){ localStorage.setItem(POINTS_KEY,points); pointsEl.textContent=points; }
-    function saveAdsState(){ localStorage.setItem(ADS_LEFT_KEY,adsLeft); localStorage.setItem(RESET_UNTIL_KEY,resetUntil); }
-
-    function formatTime(ms){
-      const s=Math.max(0,Math.ceil(ms/1000));
-      const m=String(Math.floor(s/60)).padStart(2,'0');
-      const sec=String(s%60).padStart(2,'0');
-      return `${m}:${sec}`;
-    }
-
-    function updateUI(){
-      const now=Date.now();
-      if(adsLeft>0){
-        adCounterEl.textContent=adsLeft;
-        watchBtn.disabled=false;
-        watchBtn.innerHTML='👁<br>Watch';
-      }else if(now<resetUntil){
-        watchBtn.disabled=true;
-        watchBtn.innerHTML='⏳<br>Wait';
-        adCounterEl.textContent=formatTime(resetUntil-now);
-      }else{
-        adsLeft=INITIAL_ADS; resetUntil=0; saveAdsState(); updateUI();
-      }
-    }
-
-    watchBtn.addEventListener('click',()=>{
-      if(adsLeft<=0)return;
-      watchBtn.disabled=true; watchBtn.innerHTML='⏳<br>Wait';
-      setTimeout(()=>{
-        adsLeft--; saveAdsState();
-        points+=AD_REWARD; savePoints();
-        if(adsLeft<=0){ resetUntil=Date.now()+RESET_MINUTES*60*1000; saveAdsState(); }
-        updateUI();
-      },2000);
-    });
-
-    setInterval(updateUI,1000);
-    window.addEventListener('load',()=> setTimeout(()=> document.getElementById('loader').style.display='none',800));
-
-    document.getElementById('openTask').onclick=()=> document.getElementById('taskOverlay').style.display='flex';
-    document.getElementById('copyRef2').onclick=()=> document.getElementById('copyRef').click();
-
-    /* ========== Telegram User ========== */
-    const tg=window.Telegram.WebApp; tg.ready();
-    const user=tg.initDataUnsafe?.user;
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    const user = tg.initDataUnsafe?.user;
     if(user){
-      const full=[user.first_name,user.last_name].filter(Boolean).join(' ');
-      document.getElementById('userName').textContent=full;
-      document.getElementById('userPic').src=user.photo_url||`https://i.pravatar.cc/150?u=${user.id}`;
+      const full = [user.first_name,user.last_name].filter(Boolean).join(' ');
+      document.getElementById('userName').textContent = full;
+      document.getElementById('userPic').src = user.photo_url || \`https://i.pravatar.cc/150?u=\${user.id}\`;
     }
+
+    document.getElementById('openTask').onclick = () => document.getElementById('taskOverlay').style.display = 'flex';
+    document.getElementById('copyRef2').onclick = () => document.getElementById('copyRef').click();
   </script>
+
+  <!-- ربط سكربت الإحالات -->
+  <script src="index.js"></script>
 </body>
 </html>
