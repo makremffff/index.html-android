@@ -71,7 +71,8 @@
 
       <p id="status"></p>
       <p id="profile"></p>
-      <p id="refLink"></p>
+      <!-- العنصر المفقود -->
+      <p id="refLink" style="display:none;"></p>
 
       <div id="adCounter">15</div>
 
@@ -93,7 +94,7 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
     /*****************************************************************/
-    /*  سكربب كامل: عدّاد تنازلي 60 دقيقة بعد الإعلان رقم 15         */
+    /*  عدّاد تنازلي 60 دقيقة بعد الإعلان رقم 15                    */
     /*****************************************************************/
     const AD_REWARD         = 1000;
     const INITIAL_ADS       = 15;
@@ -102,16 +103,30 @@
     const ADS_LEFT_KEY      = 'adsLeft';
     const RESET_UNTIL_KEY   = 'resetUntil';
 
-    let points    = parseInt(localStorage.getItem(POINTS_KEY)   || '0');
-    let adsLeft   = parseInt(localStorage.getItem(ADS_LEFT_KEY) || INITIAL_ADS);
-    let resetUntil= parseInt(localStorage.getItem(RESET_UNTIL_KEY)|| '0');
+    let points    = 0;
+    let adsLeft   = INITIAL_ADS;
+    let resetUntil= 0;
+
+    try{
+      points  = parseInt(localStorage.getItem(POINTS_KEY)   || '0');
+      adsLeft = parseInt(localStorage.getItem(ADS_LEFT_KEY) || INITIAL_ADS);
+      resetUntil= parseInt(localStorage.getItem(RESET_UNTIL_KEY)|| '0');
+    }catch(e){ /* silent */ }
 
     const pointsEl    = document.getElementById('points');
     const adCounterEl = document.getElementById('adCounter');
     const watchBtn    = document.getElementById('watchBtn');
 
-    function savePoints(){ localStorage.setItem(POINTS_KEY,points); pointsEl.textContent=points; }
-    function saveAdsState(){ localStorage.setItem(ADS_LEFT_KEY,adsLeft); localStorage.setItem(RESET_UNTIL_KEY,resetUntil); }
+    function savePoints(){ 
+      try{ localStorage.setItem(POINTS_KEY,points); }catch(e){}
+      pointsEl.textContent=points; 
+    }
+    function saveAdsState(){ 
+      try{ 
+        localStorage.setItem(ADS_LEFT_KEY,adsLeft); 
+        localStorage.setItem(RESET_UNTIL_KEY,resetUntil); 
+      }catch(e){}
+    }
 
     function formatTime(ms){
       const s=Math.max(0,Math.ceil(ms/1000));
@@ -151,24 +166,16 @@
 
     document.getElementById('openTask').onclick=()=> document.getElementById('taskOverlay').style.display='flex';
 
-    document.getElementById('copyRef2').onclick = () => {
-      const link = document.getElementById('refLink').textContent.trim();
-      if (!link) {
-        alert("⚠️ رابط الإحالة غير متوفر بعد!");
-        return;
-      }
-      navigator.clipboard.writeText(link)
-        .then(() => alert("✅ تم نسخ رابط الإحالة!"))
-        .catch(() => alert("❌ حدث خطأ أثناء النسخ"));
-    };
-
-    /* ========== Telegram User ========== */
-    const tg=window.Telegram.WebApp; tg.ready();
-    const user=tg.initDataUnsafe?.user;
+    /* ===== Telegram User ===== */
+    const tg=window.Telegram.WebApp; 
+    if(tg){ tg.ready(); }
+    const user=tg?.initDataUnsafe?.user;
     if(user){
       const full=[user.first_name,user.last_name].filter(Boolean).join(' ');
-      document.getElementById('userName').textContent=full;
-      document.getElementById('userPic').src=user.photo_url||`https://i.pravatar.cc/150?u=${user.id}`;
+      const nameEl=document.getElementById('userName');
+      const picEl =document.getElementById('userPic');
+      if(nameEl) nameEl.textContent=full;
+      if(picEl)  picEl.src=user.photo_url||`https://i.pravatar.cc/150?u=${user.id}`;
     }
   </script>
 </body>
